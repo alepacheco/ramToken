@@ -19,19 +19,19 @@
     {
       "label": "deploy",
       "type": "shell",
-      "command": "cleos --wallet-url=http://localhost:8899/ -u http://localhost:8888/ set contract exchangedop2 ./bin/RamToken",
+      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1111 ./bin/RamToken",
       "problemMatcher": []
     },
     {
       "label": "build & deploy",
       "type": "shell",
-      "command": "eosiocpp -o bin/RamToken/RamToken.wast RamToken.cpp && eosiocpp -g bin/RamToken/RamToken.abi RamToken.cpp && cleos --wallet-url=http://localhost:8899/ -u http://localhost:8888/ set contract exchangedop2 ./bin/RamToken",
+      "command": "eosiocpp -o bin/RamToken/RamToken.wast RamToken.cpp && eosiocpp -g bin/RamToken/RamToken.abi RamToken.cpp && cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1111 ./bin/RamToken",
       "problemMatcher": []
     },
     {
       "label": "set_eosio_code",
       "type": "shell",
-      "command": "cleos --wallet-url=http://localhost:8899/ -u http://localhost:8888/ set account permission exchangedop2 active '{\"threshold\": 1,\"keys\": [{\"key\": \"EOS5cMgd9hqvgaXEnzEEbX2tVr6FkpgvxpPYRgsxm8q3RAC3rJ2zH\",\"weight\": 1}],\"accounts\": [{\"permission\":{\"actor\":\"exchangedop2\",\"permission\":\"eosio.code\"},\"weight\":1}]}' owner -p exchangedop2",
+      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set account permission ramtoken1111 active '{\"threshold\": 1,\"keys\": [{\"key\": \"EOS5cMgd9hqvgaXEnzEEbX2tVr6FkpgvxpPYRgsxm8q3RAC3rJ2zH\",\"weight\": 1}],\"accounts\": [{\"permission\":{\"actor\":\"ramtoken1111\",\"permission\":\"eosio.code\"},\"weight\":1}]}' owner -p ramtoken1111",
       "problemMatcher": []
     }
   ]
