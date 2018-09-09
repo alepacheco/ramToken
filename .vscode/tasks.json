@@ -6,32 +6,32 @@
       "group": "build",
       "type": "shell",
       "command":
-        "eosiocpp -o bin/RamToken/RamToken.wast RamToken.cpp && eosiocpp -g bin/RamToken/RamToken.abi RamToken.cpp",
+        "eosio-cpp ramToken.cpp -o bin/ramToken/ramToken.wast  --abigen",
       "problemMatcher": []
     },
     {
       "label": "create build folder",
       "type": "shell",
       "command":
-        "mkdir -p bin/RamToken",
+        "mkdir -p bin/ramToken",
       "problemMatcher": []
     },
     {
       "label": "deploy",
       "type": "shell",
-      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1111 ./bin/RamToken",
+      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1234 ./bin/ramToken",
       "problemMatcher": []
     },
     {
       "label": "build & deploy",
       "type": "shell",
-      "command": "eosiocpp -o bin/RamToken/RamToken.wast RamToken.cpp && eosiocpp -g bin/RamToken/RamToken.abi RamToken.cpp && cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1111 ./bin/RamToken",
+      "command": "eosiocpp -o bin/ramToken/ramToken.wast ramToken.cpp && eosiocpp -g bin/ramToken/ramToken.abi ramToken.cpp && cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set contract ramtoken1234 ./bin/ramToken",
       "problemMatcher": []
     },
     {
       "label": "set_eosio_code",
       "type": "shell",
-      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set account permission ramtoken1111 active '{\"threshold\": 1,\"keys\": [{\"key\": \"EOS5cMgd9hqvgaXEnzEEbX2tVr6FkpgvxpPYRgsxm8q3RAC3rJ2zH\",\"weight\": 1}],\"accounts\": [{\"permission\":{\"actor\":\"ramtoken1111\",\"permission\":\"eosio.code\"},\"weight\":1}]}' owner -p ramtoken1111",
+      "command": "cleos --wallet-url=http://localhost:8899/ -u http://jungle.cryptolions.io:18888 set account permission ramtoken1234 active '{\"threshold\": 1,\"keys\": [{\"key\": \"EOS5cMgd9hqvgaXEnzEEbX2tVr6FkpgvxpPYRgsxm8q3RAC3rJ2zH\",\"weight\": 1}],\"accounts\": [{\"permission\":{\"actor\":\"ramtoken1234\",\"permission\":\"eosio.code\"},\"weight\":1}]}' owner -p ramtoken1234",
       "problemMatcher": []
     }
   ]

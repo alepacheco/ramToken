@@ -1,10 +1,11 @@
+#include <cmath>
 #include <eosiolib/currency.hpp>
 #include <eosiolib/eosio.hpp>
+#include <eosiolib/print.hpp>
 #include <eosiolib/singleton.hpp>
 #include <eosiolib/time.hpp>
+#include <eosiolib/transaction.hpp>
 #include <eosiolib/types.hpp>
-
-#include <cmath>
 #include <functional>
 #include <string>
 
@@ -14,7 +15,7 @@ namespace eosio {
 class RamToken : public eosio::contract {
  private:
   account_name _contract;
-  const symbol_type SYMBOL = S(4, KB);
+  const symbol_type SYMBOL = S(0, RAM);
 
   struct transfer_t {
     account_name from;
@@ -38,9 +39,11 @@ class RamToken : public eosio::contract {
   //@abi table stat i64
   struct stats_t {
     asset supply;
+    asset max_supply;
     account_name issuer;
     uint64_t primary_key() const { return supply.symbol.name(); }
   };
+
 
   typedef eosio::multi_index<N(accounts), account> accounts;
   typedef eosio::multi_index<N(stat), stats_t> stats;
@@ -62,6 +65,9 @@ class RamToken : public eosio::contract {
   /// @abi action
   void transfer(account_name from, account_name to, asset quantity,
                 string memo);
+
+  /// @abi action
+  void create();
 };
 
 }  // namespace eosio

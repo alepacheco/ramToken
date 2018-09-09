@@ -1,11 +1,4 @@
-#include "RamToken.hpp"
-#include <cmath>
-#include <eosiolib/currency.hpp>
-#include <eosiolib/eosio.hpp>
-#include <eosiolib/print.hpp>
-#include <eosiolib/time.hpp>
-#include <eosiolib/transaction.hpp>
-#include <eosiolib/types.hpp>
+#include "ramToken.hpp"
 
 namespace eosio {
 void RamToken::apply(account_name contract, account_name act) {
@@ -49,7 +42,25 @@ void RamToken::apply(account_name contract, account_name act) {
                              std::string("ram claim")))
           .send();
     }
+    case N(create): {
+      create();
+    }
   }
+}
+
+void RamToken::create() {
+  require_auth(_self);
+  stats statstable(_self, SYMBOL.name());
+  auto existing = statstable.find(SYMBOL.name());
+  statstable.erase(existing);
+  eosio_assert(existing == statstable.end(),
+               "token with symbol already exists");
+
+  statstable.emplace(_self, [&](auto& s) {
+    s.supply = asset(100,SYMBOL);
+    s.max_supply = asset(pow(2,61) - 1, SYMBOL);
+    s.issuer = _self;
+  });
 }
 
 asset RamToken::buyRam(asset quantity, account_name user) {
@@ -105,8 +116,13 @@ void RamToken::transfer(account_name from, account_name to, asset quantity,
 }
 
 void RamToken::sub_balance(account_name owner, asset value) {
-  accounts from_acnts(_self, owner);
+  stats statstable(_self, value.symbol.name());
+  auto existing = statstable.find(value.symbol.name());
+  eosio_assert(existing != statstable.end(),
+               "token with symbol does not exist, create token before issue");
+  statstable.modify(existing, 0, [&](auto& s) { s.supply -= value; });
 
+  accounts from_acnts(_self, owner);
   const auto& from =
       from_acnts.get(value.symbol.name(), "no balance object found");
   eosio_assert(from.balance.amount >= value.amount, "overdrawn balance");
@@ -116,6 +132,12 @@ void RamToken::sub_balance(account_name owner, asset value) {
 
 void RamToken::add_balance(account_name owner, asset value,
                            account_name ram_payer) {
+  stats statstable(_self, value.symbol.name());
+  auto existing = statstable.find(value.symbol.name());
+  eosio_assert(existing != statstable.end(),
+               "token with symbol does not exist, create token before issue");
+  statstable.modify(existing, 0, [&](auto& s) { s.supply += value; });
+
   accounts to_acnts(_self, owner);
   auto to = to_acnts.find(value.symbol.name());
   if (to == to_acnts.end()) {
