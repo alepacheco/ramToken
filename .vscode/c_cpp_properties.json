@@ -4,7 +4,11 @@
             "name": "Mac",
             "includePath": [
                 "${workspaceFolder}/**",
-                "/usr/local/eosio/include/**"
+                "/usr/local/eosio/include/**",
+                "/usr/local/eosio.cdt/**",
+                "/usr/local/eosio.cdt/include/**",
+                "/usr/local/eosio.cdt/**/**",                
+                "/usr/local/eosio.cdt/lib/cmake/**"
             ],
             "defines": [],
             "macFrameworkPath": [
@@ -14,7 +18,9 @@
             "compilerPath": "/usr/bin/clang",
             "cStandard": "c11",
             "cppStandard": "c++17",
-            "intelliSenseMode": "clang-x64"
+            "intelliSenseMode": "clang-x64",
+            "configurationProvider": "vector-of-bool.cmake-tools",
+            "compileCommands": "${workspaceFolder}/build/compile_commands.json"
         }
     ],
     "version": 4

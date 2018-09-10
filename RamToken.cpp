@@ -5,23 +5,19 @@ void RamToken::apply(account_name contract, account_name act) {
   switch (act) {
     case N(transfer): {
       transfer_t data = unpack_action_data<transfer_t>();
-
       // If deposit
       if (contract == N(eosio.token)) {
         if (data.from == _self || data.from == N(eosio.ram) ||
-            data.to == N(eosio.ramfee) || data.to == N(eosio.ram)) {
+            data.from == N(eosio) || data.to == N(eosio.ramfee) ||
+            data.to == N(eosio.ram)) {
           break;
         }
-        require_auth(data.from);
-        eosio_assert(data.from != data.to, "cannot transfer to self");
-        eosio_assert(is_account(data.to), "to account does not exist");
-        eosio_assert(data.quantity.is_valid(), "invalid quantity");
-        eosio_assert(data.quantity.symbol == CORE_SYMBOL,
-                     "must use core symbol");
 
-        auto bytesBought = buyRam(data.quantity, _self);
+        require_auth(data.from);
+        int64_t bytesBought = buyRam(data.quantity, _self);
         print(" bought: ", bytesBought);
-        add_balance(data.from, bytesBought, _self);
+
+        add_balance(data.from, asset(bytesBought, SYMBOL), _self);
       }
       // If transfer
       if (contract == _self) {
@@ -34,16 +30,16 @@ void RamToken::apply(account_name contract, account_name act) {
       claim_t data = unpack_action_data<claim_t>();
       require_auth(data.user);
       sub_balance(data.user, data.quantity);
-      // sell ram
       auto eosReceived = sellRam(data.quantity);
-      // send eos
       action(permission_level(_self, N(active)), N(eosio.token), N(transfer),
              std::make_tuple(_self, data.user, eosReceived,
                              std::string("ram claim")))
           .send();
+      break;
     }
     case N(create): {
       create();
+      break;
     }
   }
 }
@@ -52,18 +48,17 @@ void RamToken::create() {
   require_auth(_self);
   stats statstable(_self, SYMBOL.name());
   auto existing = statstable.find(SYMBOL.name());
-  statstable.erase(existing);
   eosio_assert(existing == statstable.end(),
-               "token with symbol already exists");
+              "token with symbol already exists");
 
   statstable.emplace(_self, [&](auto& s) {
-    s.supply = asset(100,SYMBOL);
-    s.max_supply = asset(pow(2,61) - 1, SYMBOL);
+    s.supply = asset(0, SYMBOL);
+    s.max_supply = asset(pow(2, 61) - 1, SYMBOL);
     s.issuer = _self;
   });
 }
 
-asset RamToken::buyRam(asset quantity, account_name user) {
+int64_t RamToken::buyRam(asset quantity /* EOS */, account_name user) {
   eosio_assert(quantity.amount > 0, "must purchase a positive amount");
   auto fee = quantity;
   fee.amount = (fee.amount + 199) / 200;
@@ -72,21 +67,21 @@ asset RamToken::buyRam(asset quantity, account_name user) {
 
   auto itr = rammarket(N(eosio), N(eosio)).find(S(4, RAMCORE));
   auto tmp = *itr;
-  auto bytes = tmp.convert(quant_after_fee, S(0, RAM));
+  asset bytes = tmp.convert(quant_after_fee, S(0, RAM));
   action(permission_level(_self, N(active)), N(eosio), N(buyram),
          std::make_tuple(_self, user, quantity))
       .send();
 
-  return bytes;
+  return bytes.amount;
 }
 
 asset RamToken::sellRam(asset quantity) {
   eosio_assert(quantity.amount > 0, "must purchase a positive amount");
-  eosio_assert(quantity.symbol == S(0, RAM), "must use ram symbol");
+  eosio_assert(quantity.symbol == SYMBOL, "must use ram symbol");
 
   auto itr = rammarket(N(eosio), N(eosio)).find(S(4, RAMCORE));
   auto tmp = *itr;
-  auto tokens_out = tmp.convert(quantity, CORE_SYMBOL);
+  auto tokens_out = tmp.convert(asset(quantity.amount, S(0,RAM)), CORE_SYMBOL);
   auto fee = (tokens_out.amount + 199) / 200;
   tokens_out.amount -= fee;
 
@@ -108,7 +103,7 @@ void RamToken::transfer(account_name from, account_name to, asset quantity,
 
   eosio_assert(quantity.is_valid(), "invalid quantity");
   eosio_assert(quantity.amount > 0, "must transfer positive quantity");
-  eosio_assert(quantity.symbol == S(0, RAM), "symbol precision mismatch");
+  eosio_assert(quantity.symbol == SYMBOL, "symbol precision mismatch");
   eosio_assert(memo.size() <= 256, "memo has more than 256 bytes");
   auto payer = has_auth(to) ? to : from;
   sub_balance(from, quantity);
